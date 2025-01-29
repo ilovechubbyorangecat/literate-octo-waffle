@@ -1,23 +1,50 @@
-const express = require('express');
 const http = require('http');
-const socketIo = require('socket.io');
+const WebSocket = require('ws');
+const fs = require('fs');
 
-const app = express();
-const server = http.createServer(app);
-const io = socketIo(server);
+const server = http.createServer((req, res) => {
+    if (req.url === '/') {
+        fs.readFile('index.html', 'utf8', (err, data) => {
+            if (err) {
+                res.writeHead(500);
+                res.end('Error loading index.html');
+                return;
+            }
+            res.writeHead(200, {'Content-Type': 'text/html'});
+            res.end(data);
+        });
+    } else if (req.url === '/style.css') {
+        fs.readFile('style.css', 'utf8', (err, data) => {
+            if (err) {
+                res.writeHead(500);
+                res.end('Error loading style.css');
+                return;
+            }
+            res.writeHead(200, {'Content-Type': 'text/css'});
+            res.end(data);
+        });
+    }
+});
 
-app.use(express.static('public')); // Serve static files
+const wss = new WebSocket.Server({ server });
 
-io.on('connection', (socket) => {
-  console.log('New client connected');
-  socket.on('paste', (data) => {
-    io.emit('newPaste', data); // Broadcast the new paste to all clients
-  });
-  socket.on('disconnect', () => {
-    console.log('Client disconnected');
-  });
+wss.on('connection', (ws) => {
+    console.log('A new client connected');
+    
+    ws.on('message', (message) => {
+        // Broadcast the received message to all clients
+        wss.clients.forEach(client => {
+            if (client !== ws && client.readyState === WebSocket.OPEN) {
+                client.send(message);
+            }
+        });
+    });
+
+    ws.on('close', () => {
+        console.log('Client disconnected');
+    });
 });
 
 server.listen(3000, () => {
-  console.log('Server is running on port 3000');
+    console.log('Server running on http://localhost:3000');
 });
