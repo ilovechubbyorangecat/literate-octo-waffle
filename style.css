@@ -1,0 +1,13 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  padding: 20px;
+}
+textarea {
+  width: 80%;
+  height: 200px;
+  margin-bottom: 20px;
+}
+#pastes {
+  margin-top: 30px;
+}
