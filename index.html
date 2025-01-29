@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Pastebin</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Simple Pastebin</h1>
+  <textarea id="pasteBox" placeholder="Paste your text here..."></textarea>
+  <button id="saveBtn">Save Paste</button>
+  <div id="pastes"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const pasteBox = document.getElementById('pasteBox');
+    const saveBtn = document.getElementById('saveBtn');
+    const pastesDiv = document.getElementById('pastes');
+
+    saveBtn.addEventListener('click', () => {
+      const paste = pasteBox.value;
+      socket.emit('paste', paste);
+      pasteBox.value = ''; // Clear the box
+    });
+
+    socket.on('newPaste', (paste) => {
+      const pasteElement = document.createElement('div');
+      pasteElement.textContent = paste;
+      pastesDiv.appendChild(pasteElement);
+    });
+  </script>
+</body>
+</html>
